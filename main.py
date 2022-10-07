@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 
 from app import model
 from app.db.database import SessionLocal
+from app.util import FileUploadUtil
 
 app = FastAPI()
 
@@ -37,14 +38,11 @@ async def create_file(files: List[UploadFile], user_id: int = Form(default=0, al
     :param content: 게시글 내용
     :return: 게시글 ID
     """
-    upload_directory = "./resource/"
+    await FileUploadUtil.upload_file_list(files)
     post = model.Post(USER_ID=user_id, TITLE=title, CONTENT=content)
     db.add(post)
 
-    for item in files:
-        contents = await item.read()
-        with open(os.path.join(upload_directory, (str(uuid.uuid4()) + '.' + item.filename.split('.')[-1])), "wb") as fp:
-            fp.write(contents)
+
 
     db.commit()
 
